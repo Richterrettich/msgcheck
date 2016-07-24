@@ -1,8 +1,8 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"strings"
 
@@ -10,13 +10,24 @@ import (
 )
 
 func main() {
-	file := os.Args[1]
+	fileName := os.Args[1]
 	result := domain.Commit{}
-	bytes, err := ioutil.ReadFile(file)
+
+	file, err := os.Open(fileName)
 	if err != nil {
 		panic(err)
 	}
-	content := string(bytes)
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+	content := ""
+	for scanner.Scan() {
+		line := scanner.Text()
+		if !strings.HasPrefix(line, "#") {
+			content = content + "\n" + line
+		}
+	}
+	content = strings.TrimSpace(content)
 	if strings.ToLower(content) == "initial commit" {
 		os.Exit(0)
 	}
